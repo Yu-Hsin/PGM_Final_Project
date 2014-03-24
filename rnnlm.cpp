@@ -648,7 +648,8 @@ int main(int argc, char **argv)
     
     
     srand(1);
-
+    
+    //TRAINING PART!
     if (train_mode) {
     	CRnnLM model1;
 

@@ -4,7 +4,7 @@
 // Version 0.4a
 // (c) 2010-2012 Tomas Mikolov (tmikolov@gmail.com)
 // (c) 2013 Cantab Research Ltd (info@cantabResearch.com)
-//
+//AAAAAAAAAAAAAAAAAAAAA
 ///////////////////////////////////////////////////////////////////////
 
 #ifndef _RNNLMLIB_H_
