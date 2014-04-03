@@ -99,6 +99,8 @@ protected:
     int layer1_size;
     int layerc_size;
     int layer2_size;
+    int layer_su_size;
+    int layer_in_size;
     
     long long direct_size;
     int direct_order;
@@ -119,9 +121,17 @@ protected:
     struct neuron *neuc;		//neurons in hidden layer
     struct neuron *neu2;		//neurons in output layer
 
+    struct neuron *neu_su;
+    struct neuron *neu_in;
+
+
     struct synapse *syn0;		//weights between input and hidden layer
     struct synapse *syn1;		//weights between hidden and output layer (or hidden and compression if compression>0)
     struct synapse *sync;		//weights between hidden and compression layer
+
+    struct synapse *syn_uf;
+    struct synapse *syn_uu;
+
     direct_t *syn_d;		//direct parameters between input and output layer (similar to Maximum Entropy model parameters)
     
     //backup used in training:

@@ -15,6 +15,7 @@
 #include <cfloat>
 #include "fastexp.h"
 #include "rnnlmlib.h"
+#include <iostream>
 
 ///// include blas
 #ifdef USE_BLAS
@@ -340,13 +341,22 @@ void CRnnLM::initNet()
 	int a, b, cl;
 
 	//layer1 = hidden layer
+
 	layer0_size=vocab_size+layer1_size;
 	layer2_size=vocab_size+class_size; //Why add the class_size
+	layer_su_size = layer0_size;
+	layer_in_size = vocab_size + layer1_size;
 
 	neu0=(struct neuron *)calloc(layer0_size, sizeof(struct neuron));//initialize to be zero
 	neu1=(struct neuron *)calloc(layer1_size, sizeof(struct neuron));
 	neuc=(struct neuron *)calloc(layerc_size, sizeof(struct neuron));//layerc_size = 0
 	neu2=(struct neuron *)calloc(layer2_size, sizeof(struct neuron));
+
+	neu_su = (struct neuron *)calloc(layer_su_size, sizeof(struct neuron));
+	neu_in = (struct neuron *)calloc(layer_in_size, sizeof(struct neuron));
+
+	syn_uf = (struct synapse *)calloc(layer_su_size*layer0_size, sizeof(struct synapse));
+	syn_uu = (struct synapse *)calloc(layer_in_size*layer_su_size, sizeof(struct synapse));
 
 	syn0=(struct synapse *)calloc(layer0_size*layer1_size, sizeof(struct synapse));
 	if (layerc_size==0)//this condition is true
@@ -415,6 +425,18 @@ void CRnnLM::initNet()
 
 	for (b=0; b<layer1_size; b++) for (a=0; a<layer0_size; a++) {
 		syn0[a+b*layer0_size].weight=random(-0.1, 0.1)+random(-0.1, 0.1)+random(-0.1, 0.1); // any tricks here???
+	}
+
+	for(b=0;b<layer0_size;b++){
+		for(a=0;a<layer_su_size;a++){
+				syn_uf[a+b*layer_su_size].weight = (a==b);
+		}
+	}
+
+	for(b=0;b<layer_su_size;b++){
+			for(a=0;a<layer_in_size;a++){
+				syn_uu[a+b*layer_in_size].weight = (a==b);
+			}
 	}
 
 	if (layerc_size>0) {
@@ -939,6 +961,22 @@ void CRnnLM::netFlush()   //cleans all activations and error vectors
 		neu0[a].er=0;
 	}
 
+
+	for (a=0; a<layer_su_size; a++) {
+			neu_su[a].ac=0;
+			neu_su[a].er=0;
+	}
+
+	for (a=0; a<layer_in_size-layer1_size; a++) {
+			neu_in[a].ac=0;
+			neu_in[a].er=0;
+	}//vocab part
+
+	for (a=layer_in_size-layer1_size; a<layer_in_size; a++) {
+				neu_in[a].ac=0.1;
+				neu_in[a].er=0;
+	}
+
 	for (a=layer0_size-layer1_size; a<layer0_size; a++) {   //last hidden layer is initialized to vector of 0.1 values to prevent unstability
 		neu0[a].ac=0.1;
 		neu0[a].er=0;
@@ -1102,11 +1140,20 @@ void CRnnLM::computeNet(int last_word, int word)
 	real val;
 	double sum;   //sum is used for normalization: it's better to have larger precision as many numbers are summed together here
 
-	if (last_word!=-1) neu0[last_word].ac=1;
+	//if (last_word!=-1) neu0[last_word].ac=1;
+	//if (last_word!=-1) neu_su[last_word].ac=1;
+	if (last_word!=-1) neu_in[last_word].ac=1;
 
 	//propagate 0->1
 	for (a=0; a<layer1_size; a++) neu1[a].ac=0;
 	for (a=0; a<layerc_size; a++) neuc[a].ac=0; //useless
+
+	//matrixXvector(neu0, neu_su, syn_uu, layer0_size, 0, layer0_size-layer1_size, 0, layer_su_size-layer1_size, 0);
+	for(int no_node = 0 ; no_node < layer_in_size;no_node++)//modified later
+			neu_su[no_node].ac = neu_in[no_node].ac;
+
+	for(int no_node = 0 ; no_node < layer0_size;no_node++)//modified later
+			neu0[no_node].ac = neu_su[no_node].ac;
 
 	matrixXvector(neu1, neu0, syn0, layer0_size, 0, layer1_size, layer0_size-layer1_size, layer0_size, 0);
 	//dst, src_vector, src_matrix, matrix_width, from, to, from2, to2, type
@@ -1492,8 +1539,12 @@ void CRnnLM::copyHiddenLayerToInput()
 {
 	int a;
 
-	for (a=0; a<layer1_size; a++) {
+	/*for (a=0; a<layer1_size; a++) {
 		neu0[a+layer0_size-layer1_size].ac=neu1[a].ac;
+	}*/
+
+	for (a=0; a<layer1_size; a++) {
+			neu_in[a+layer_in_size-layer1_size].ac=neu1[a].ac;
 	}
 }
 
@@ -1589,6 +1640,9 @@ void CRnnLM::trainNet()
 			copyHiddenLayerToInput();
 
 			if (last_word!=-1) neu0[last_word].ac=0;  //delete previous activation
+			if (last_word!=-1) neu_su[last_word].ac=0;  //delete previous activation
+			if (last_word!=-1) neu_in[last_word].ac=0;
+
 
 			last_word=word;
 
