@@ -137,16 +137,21 @@ protected:
     direct_t *syn_d;		//direct parameters between input and output layer (similar to Maximum Entropy model parameters)
     
     //backup used in training:
+    struct neuron *neu_inb;
+    struct neuron *neu_sub;
     struct neuron *neu0b;
     struct neuron *neu1b;
     struct neuron *neucb;
     struct neuron *neu2b;
 
+    struct synapse *syn_uub;
+    struct synapse *syn_ufb;
     struct synapse *syn0b;
     struct synapse *syn1b;
     struct synapse *syncb;
     direct_t *syn_db;
     
+
     //backup used in n-bset rescoring:
     struct neuron *neu1b2;
     
