@@ -258,7 +258,7 @@ void CRnnLM::saveWeights()      //saves current weights and unit activations
 		syn_uub[a+b*layer_in_size].weight=syn_uu[a+b*layer_in_size].weight;
 	}
 
-	for (int d=0; d<domain_sizel;d++){
+	for (int d=0; d<domain_size;d++){
 		for (a=0; a<layer_su_size; a++) {
 			syn_ufb[a+d*(layer_su_size*layer0_size)].weight=syn_uf[a+d*(layer_su_size*layer0_size)].weight;
 		}
@@ -610,7 +610,14 @@ void CRnnLM::saveNet()       //will save the whole network structure
 	fprintf(fo, "save after processing # words: %d\n", anti_k);
 	fprintf(fo, "# of training words: %d\n", train_words);
 
-	fprintf(fo, "input layer size: %d\n", layer0_size);
+	//fprintf(fo, "input layer size: %d\n", layer0_size);
+	//fprintf(fo, "hidden layer size: %d\n", layer1_size);
+
+	//////////////////////////////IMPLEMENTATION///////////////////////////
+	fprintf(fo, "domain size: %d\n", domain_size);
+	fprintf(fo, "input layer size: %d\n", layer_in_size);
+	fprintf(fo, "su layer size: %d\n", layer_su_size);
+	fprintf(fo, "0 layer size: %d\n", layer0_size);
 	fprintf(fo, "hidden layer size: %d\n", layer1_size);
 	fprintf(fo, "compression layer size: %d\n", layerc_size);
 	fprintf(fo, "output layer size: %d\n", layer2_size);
@@ -640,12 +647,24 @@ void CRnnLM::saveNet()       //will save the whole network structure
 		fprintf(fo, "\nHidden layer activation:\n");
 		for (a=0; a<layer1_size; a++) fprintf(fo, "%.4f\n", neu1[a].ac);
 	}
+
 	if (filetype==BINARY) {
+		for (a=0; a<layer_su_size; a++) {
+			fl=neu_su[a].ac;
+			fwrite(&fl, sizeof(fl), 1, fo);
+		}
+
+		for (a=0; a<layer0_size; a++) {
+			fl=neu_0[a].ac;
+			fwrite(&fl, sizeof(fl), 1, fo);
+		}
+
 		for (a=0; a<layer1_size; a++) {
 			fl=neu1[a].ac;
 			fwrite(&fl, sizeof(fl), 1, fo);
 		}
 	}
+
 	//////////
 	if (filetype==TEXT) {
 		fprintf(fo, "\nWeights 0->1:\n");
@@ -655,7 +674,23 @@ void CRnnLM::saveNet()       //will save the whole network structure
 			}
 		}
 	}
+
 	if (filetype==BINARY) {
+
+		for (b=0; b<layer_su_size; b++) {
+			for (a=0; a<layer_in_size; a++) {
+				fl=syn_uu[a+b*layer_in_size].weight;
+				fwrite(&fl, sizeof(fl), 1, fo);
+			}
+		}
+
+		for (int d = 0; d < domain_size; d++){
+			for (a=0; a<layer_su_size; a++) {
+				fl=syn_uf[a+d*layer_su_size*layer_su_size].weight;
+				fwrite(&fl, sizeof(fl), 1, fo);
+			}
+		}
+
 		for (b=0; b<layer1_size; b++) {
 			for (a=0; a<layer0_size; a++) {
 				fl=syn0[a+b*layer0_size].weight;
