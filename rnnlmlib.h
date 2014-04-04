@@ -95,6 +95,8 @@ protected:
     int *vocab_hash;
     int vocab_hash_size;
     
+    int factor_size;
+    int domain_size;
     int layer0_size;
     int layer1_size;
     int layerc_size;
@@ -288,6 +290,9 @@ public:
     }
     
     real random(real min, real max);
+
+    void setDomainSize(int size) {domain_size = size;}
+    void setFactorSize(int size) {factor_size = size;}
 
     void setTrainFile(char *str);
     void setValidFile(char *str);

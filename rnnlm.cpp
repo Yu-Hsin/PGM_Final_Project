@@ -35,7 +35,8 @@ int main(int argc, char **argv)
     int debug_mode=1;
     
     int fileformat=TEXT;
-    
+    int factor_size = 0;
+    int domain_size = 0;
     int train_mode=0;
     int valid_data_set=0;
     int test_data_set=0;
@@ -179,6 +180,8 @@ int main(int argc, char **argv)
     }
 
     
+
+
     //set debug mode
     i=argPos((char *)"-debug", argc, argv);
     if (i>0) {
@@ -191,6 +194,35 @@ int main(int argc, char **argv)
 
 	if (debug_mode>0)
         printf("debug mode: %d\n", debug_mode);
+    }
+
+    //facotr
+    i=argPos((char *)"-factor", argc, argv);
+    if (i>0) {
+        if (i+1==argc) {
+            printf("ERROR: factors not specified!\n");
+            return 0;
+        }
+
+        factor_size=atoi(argv[i+1]);
+
+        if (debug_mode>0)
+        printf("Factor: %d\n", factor_size);
+    }
+    //domain
+
+    //facotr
+    i=argPos((char *)"-domain", argc, argv);
+    if (i>0) {
+        if (i+1==argc) {
+            printf("ERROR: factors not specified!\n");
+            return 0;
+        }
+
+        domain_size=atoi(argv[i+1]);
+
+        if (debug_mode>0)
+        printf("Factor: %d\n", domain_size);
     }
 
     
@@ -661,8 +693,10 @@ int main(int argc, char **argv)
     	model1.setMaxIter(maxIter);
     	if (one_iter==0) model1.setValidFile(valid_file);
 
-	model1.setClassSize(class_size);
-	model1.setOldClasses(old_classes);
+    	model1.setFactorSize(factor_size);
+    	model1.setDomainSize(domain_size);
+    	model1.setClassSize(class_size);
+		model1.setOldClasses(old_classes);
     	model1.setLearningRate(starting_alpha);
     	model1.setGradientCutoff(gradient_cutoff);
     	model1.setRegularization(regularization);

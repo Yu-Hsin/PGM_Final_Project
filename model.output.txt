@@ -1,40 +1,4 @@
 
 iter: 0
-valid log probability: -13724.515959
-PPL net: 7.463575
-
-iter: 1
-valid log probability: -13326.288892
-PPL net: 7.040730
-
-iter: 2
-valid log probability: -13129.483493
-PPL net: 6.840690
-
-iter: 3
-valid log probability: -13020.996218
-PPL net: 6.732860
-
-iter: 4
-valid log probability: -12959.012330
-PPL net: 6.672016
-
-iter: 5
-valid log probability: -12925.128945
-PPL net: 6.638989
-
-iter: 6
-valid log probability: -12764.147602
-PPL net: 6.484295
-
-iter: 7
-valid log probability: -12675.315226
-PPL net: 6.400480
-
-iter: 8
-valid log probability: -12632.579994
-PPL net: 6.360546
-
-iter: 9
-valid log probability: -12608.497045
-PPL net: 6.338151
+valid log probability: -13714.521183
+PPL net: 7.452658
