@@ -655,7 +655,7 @@ void CRnnLM::saveNet()       //will save the whole network structure
 		}
 
 		for (a=0; a<layer0_size; a++) {
-			fl=neu_0[a].ac;
+			fl=neu0[a].ac;
 			fwrite(&fl, sizeof(fl), 1, fo);
 		}
 
@@ -843,6 +843,15 @@ void CRnnLM::restoreNet()    //will read whole network structure
 	fscanf(fi, "%d", &train_words);
 	//
 	goToDelimiter(':', fi);
+	fscanf(fi, "%d", &domain_size);
+	//
+	goToDelimiter(':', fi);
+	fscanf(fi, "%d", &layer_in_size);
+	//
+	goToDelimiter(':', fi);
+	fscanf(fi, "%d", &layer_su_size);
+	//
+	goToDelimiter(':', fi);
 	fscanf(fi, "%d", &layer0_size);
 	//
 	goToDelimiter(':', fi);
@@ -928,6 +937,18 @@ void CRnnLM::restoreNet()    //will read whole network structure
 	}
 	if (filetype==BINARY) {
 		fgetc(fi);
+
+
+		for (a=0; a<layer_su_size; a++) {
+			fread(&fl, sizeof(fl), 1, fi);
+			neu_su[a].ac=fl;
+		}
+
+		for (a=0; a<layer0_size; a++) {
+			fread(&fl, sizeof(fl), 1, fi);
+			neu0[a].ac=fl;
+		}
+
 		for (a=0; a<layer1_size; a++) {
 			fread(&fl, sizeof(fl), 1, fi);
 			neu1[a].ac=fl;
@@ -944,6 +965,22 @@ void CRnnLM::restoreNet()    //will read whole network structure
 		}
 	}
 	if (filetype==BINARY) {
+
+		for (b=0; b<layer_su_size; b++) {
+			for (a=0; a<layer_in_size; a++) {
+				fread(&fl, sizeof(fl), 1, fi);
+				syn_uu[a+b*layer_in_size].weight=fl;
+			}
+		}
+
+		for (int d = 0; d < domain_size; d++){
+			for (a=0; a<layer_su_size; a++) {
+				fread(&fl, sizeof(fl), 1, fi);
+				syn_uf[a+d*layer_su_size*layer_su_size].weight=fl;
+			}
+		}
+
+
 		for (b=0; b<layer1_size; b++) {
 			for (a=0; a<layer0_size; a++) {
 				fread(&fl, sizeof(fl), 1, fi);
@@ -2016,7 +2053,8 @@ void CRnnLM::testNet()
 		}
 		copyHiddenLayerToInput();
 
-		if (last_word!=-1) neu0[last_word].ac=0;  //delete previous activation
+		//if (last_word!=-1) neu0[last_word].ac=0;  //delete previous activation
+		if (last_word!=-1) neu_in[last_word].ac=0;  //delete previous activation
 
 		last_word=word;
 
@@ -2035,7 +2073,7 @@ void CRnnLM::testNet()
 			fprintf(flog, "test log probability given by other lm: %f\n", log_other);
 			fprintf(flog, "test log probability %f*rnn + %f*other_lm: %f\n", lambda, 1-lambda, log_combine);
 		}
-
+		std::cout << (real)wordcn << std::endl;
 		fprintf(flog, "\nPPL net: %f\n", exp(-logp/(real)wordcn));
 		if (use_lmprob) {
 			fprintf(flog, "PPL other: %f\n", exp(-log_other/(real)wordcn));
