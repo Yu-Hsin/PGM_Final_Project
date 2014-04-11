@@ -16,6 +16,7 @@
 #include "fastexp.h"
 #include "rnnlmlib.h"
 #include <iostream>
+#include <assert.h>
 
 ///// include blas
 #ifdef USE_BLAS
@@ -472,6 +473,11 @@ void CRnnLM::initNet()
 	for(b=0;b<layer_su_size;b++){
 		for(a=0;a<layer_in_size;a++){
 			syn_uu[a+b*layer_in_size].weight = random(-0.1, 0.1)+random(-0.1, 0.1)+random(-0.1, 0.1);
+			/*if(a==b)
+				syn_uu[a+b*layer_in_size].weight = 1;
+			else
+				syn_uu[a+b*layer_in_size].weight = 0;
+				*/
 		}
 	}
 
@@ -479,6 +485,7 @@ void CRnnLM::initNet()
 	for(int c=0; c<domain_size;c++){
 		for(a=0;a<layer_su_size;a++){
 			syn_uf[a+c*(layer0_size*layer_su_size)].weight = random(-0.1, 0.1)+random(-0.1, 0.1)+random(-0.1, 0.1);
+			//syn_uf[a+c*(layer0_size*layer_su_size)].weight = 1;
 		}
 	}
 
@@ -850,7 +857,7 @@ void CRnnLM::restoreNet()    //will read whole network structure
 	fscanf(fi, "%d", &layer_in_size);
 	//
 	goToDelimiter(':', fi);
-	fscanf(fi, "%d", &layer_su_size);
+	fscanf(fi, "%d", &factor_size);
 	//
 	goToDelimiter(':', fi);
 	fscanf(fi, "%d", &layer0_size);
@@ -874,6 +881,7 @@ void CRnnLM::restoreNet()    //will read whole network structure
 		fscanf(fi, "%d", &direct_order);
 	}
 	//
+
 	goToDelimiter(':', fi);
 	fscanf(fi, "%d", &bptt);
 	//
@@ -925,9 +933,9 @@ void CRnnLM::restoreNet()    //will read whole network structure
 		//printf("%d  %d  %s  %d\n", b, vocab[a].cn, vocab[a].word, vocab[a].class_index);
 	}
 	//
-	if (neu0==NULL) initNet();		//memory allocation here
+	if (neu_in==NULL) initNet();		//memory allocation here
 	//
-
+	//std::cout<<"ERROR111  "<<layer_su_size << std::endl;
 
 	if (filetype==TEXT) {
 		goToDelimiter(':', fi);
@@ -1295,6 +1303,7 @@ void CRnnLM::computeNet(int last_word, int word)
 
 	//////////////////IMPLEMENTATION////////////////////
 	//activate neu_su
+
 	for (a=0; a<layer_su_size; a++) {
 			if (neu_su[a].ac>50) neu_su[a].ac=50;  //for numerical stability
 			if (neu_su[a].ac<-50) neu_su[a].ac=-50;  //for numerical stability
@@ -1307,8 +1316,10 @@ void CRnnLM::computeNet(int last_word, int word)
 		neu0[no_node].ac = neu_su[no_node].ac * syn_uf[no_node+tmp_d*(layer_su_size*layer0_size)].weight;
 
 
+
 	//////////////////IMPLEMENTATION////////////////////
 	//activate neu0
+
 	for (a=0; a<layer0_size; a++) {
 		if (neu0[a].ac>50) neu0[a].ac=50;  //for numerical stability
 		if (neu0[a].ac<-50) neu0[a].ac=-50;  //for numerical stability
@@ -1625,6 +1636,7 @@ void CRnnLM::learnNet(int last_word, int word)
 				syn_uf[b+tmp_d*(layer_su_size*layer0_size)].weight += alpha*neu0[b].er*neu_su[b].ac - syn_uf[b+tmp_d*(layer_su_size*layer0_size)].weight*beta2;
 			else
 				syn_uf[b+tmp_d*(layer_su_size*layer0_size)].weight += alpha*neu0[b].er*neu_su[b].ac;
+
 		}
 
 		//matrixXvector(neu_su, neu0, syn_uf, layer_su_size, 0, layer0_size, 0, layer_su_size, 1);
@@ -1642,6 +1654,7 @@ void CRnnLM::learnNet(int last_word, int word)
 		for (a=0; a<layer_su_size; a++) neu_su[a].er=neu_su[a].er*neu_su[a].ac*(1-neu_su[a].ac);    //error derivation at layer 1
 
 		//weight update 1->0
+
 		a=last_word;
 		if (a!=-1) {
 			if ((counter%10)==0)
@@ -1835,6 +1848,8 @@ void CRnnLM::trainNet()
 
 			word=readWordIndex(fi);     //read next word
 
+
+
 			computeNet(last_word, word);      //compute probability distribution
 
 			//update all the actual value in the neurons <apply sigmoid function>
@@ -1980,6 +1995,7 @@ void CRnnLM::trainNet()
 
 void CRnnLM::testNet()
 {
+
 	int a, b, word, last_word, wordcn;
 	FILE *fi, *flog, *lmprob=NULL;
 	real prob_other, log_other, log_combine;
@@ -2016,6 +2032,28 @@ void CRnnLM::testNet()
 	prob_other=0;
 	wordcn=0;
 	copyHiddenLayerToInput();
+
+	/*//Sanity Check!
+	for(b=0;b<layer_su_size;b++){
+		for(a=0;a<layer_in_size;a++){
+			//syn_uu[a+b*layer_in_size].weight = random(-0.1, 0.1)+random(-0.1, 0.1)+random(-0.1, 0.1);
+
+			if(a==b){
+				assert(syn_uu[a+b*layer_in_size].weight == 1);
+			}
+			else{
+				assert (syn_uu[a+b*layer_in_size].weight == 0);
+			}
+		}
+	}
+
+
+	for(int c=0; c<domain_size;c++){
+		for(a=0;a<layer_su_size;a++){
+			//syn_uf[a+c*(layer0_size*layer_su_size)].weight = random(-0.1, 0.1)+random(-0.1, 0.1)+random(-0.1, 0.1);
+			assert(syn_uf[a+c*(layer0_size*layer_su_size)].weight == 1);
+		}
+	}*/
 
 	if (bptt>0) for (a=0; a<bptt+bptt_block; a++) bptt_history[a]=0;
 	for (a=0; a<MAX_NGRAM_ORDER; a++) history[a]=0;
