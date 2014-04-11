@@ -580,6 +580,7 @@ void CRnnLM::initNet()
 			class_words[cl]=(int *)realloc(class_words[cl], class_max_cn[cl]*sizeof(int));
 		}
 	}
+
 }
 
 void CRnnLM::saveNet()       //will save the whole network structure                                                        
@@ -1284,6 +1285,7 @@ void CRnnLM::computeNet(int last_word, int word)
 
 	matrixXvector(neu_su, neu_in, syn_uu, layer_in_size, 0, layer_su_size, layer_in_size-layer1_size, layer_in_size, 0);
 
+
 	for (b=0; b<layer_su_size; b++) {//use the last word to further update the hidden layer
 			a=last_word;
 			//if (a!=-1) neu1[b].ac += neu0[a].ac * syn0[a+b*layer0_size].weight;
@@ -1316,6 +1318,7 @@ void CRnnLM::computeNet(int last_word, int word)
 
 
 	matrixXvector(neu1, neu0, syn0, layer0_size, 0, layer1_size, 0, layer0_size, 0);
+
 	//dst, src_vector, src_matrix, matrix_width, from, to, from2, to2, type
 
 
@@ -1337,6 +1340,7 @@ void CRnnLM::computeNet(int last_word, int word)
 			neuc[a].ac=1/(1+fasterexp(val));
 		}
 	}
+
 
 	//1->2 class
 	for (b=vocab_size; b<layer2_size; b++) neu2[b].ac=0;//only reset the class size, but why???
@@ -1390,13 +1394,19 @@ void CRnnLM::computeNet(int last_word, int word)
 	//1->2 word
 
 	if (word!=-1) {
-		for (c=0; c<class_cn[vocab[word].class_index]; c++) neu2[class_words[vocab[word].class_index][c]].ac=0;
+
+		for (c=0; c<class_cn[vocab[word].class_index]; c++) {
+			neu2[class_words[vocab[word].class_index][c]].ac=0;
+
+
+		}
 		if (layerc_size>0) {
 			matrixXvector(neu2, neuc, sync, layerc_size, class_words[vocab[word].class_index][0], class_words[vocab[word].class_index][0]+class_cn[vocab[word].class_index], 0, layerc_size, 0);
 		}
 		else
 		{
 			matrixXvector(neu2, neu1, syn1, layer1_size, class_words[vocab[word].class_index][0], class_words[vocab[word].class_index][0]+class_cn[vocab[word].class_index], 0, layer1_size, 0);
+
 		}
 	}
 
@@ -1444,6 +1454,7 @@ void CRnnLM::computeNet(int last_word, int word)
 			neu2[a].ac=fasterexp(neu2[a].ac-maxAc)/sum; //this prevents the need to check for overflow
 		}
 	}
+
 }
 
 void CRnnLM::learnNet(int last_word, int word)
@@ -1823,10 +1834,13 @@ void CRnnLM::trainNet()
 			}
 
 			word=readWordIndex(fi);     //read next word
+
 			computeNet(last_word, word);      //compute probability distribution
+
 			//update all the actual value in the neurons <apply sigmoid function>
 
 			if (feof(fi)) break;        //end of file: test on validation data, iterate till convergence
+
 
 			if (word!=-1) logp+=log10(neu2[vocab[word].class_index+vocab_size].ac * neu2[word].ac);
 
@@ -1846,6 +1860,7 @@ void CRnnLM::trainNet()
 				}
 			}
 			//
+
 			learnNet(last_word, word);
 
 			copyHiddenLayerToInput();
@@ -1896,11 +1911,17 @@ void CRnnLM::trainNet()
 		logp=0;
 		wordcn=0;
 		while (1) {
+
 			word=readWordIndex(fi);     //read next word
+
+
+
 			computeNet(last_word, word);      //compute probability distribution
+
 			if (feof(fi)) break;        //end of file: report LOGP, PPL
 
 			if (word!=-1) {
+
 				logp+=log10(neu2[vocab[word].class_index+vocab_size].ac * neu2[word].ac);
 				wordcn++;
 			}
@@ -1913,7 +1934,7 @@ void CRnnLM::trainNet()
 			//learnNet(last_word, word);    //*** this will be in implemented for dynamic models
 			copyHiddenLayerToInput();
 
-			if (last_word!=-1) neu0[last_word].ac=0;  //delete previous activation
+			if (last_word!=-1) neu_in[last_word].ac=0;  //delete previous activation
 
 			last_word=word;
 
@@ -2073,7 +2094,7 @@ void CRnnLM::testNet()
 			fprintf(flog, "test log probability given by other lm: %f\n", log_other);
 			fprintf(flog, "test log probability %f*rnn + %f*other_lm: %f\n", lambda, 1-lambda, log_combine);
 		}
-		std::cout << (real)wordcn << std::endl;
+
 		fprintf(flog, "\nPPL net: %f\n", exp(-logp/(real)wordcn));
 		if (use_lmprob) {
 			fprintf(flog, "PPL other: %f\n", exp(-log_other/(real)wordcn));
