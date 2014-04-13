@@ -26,7 +26,7 @@ extern "C" {
 #endif
 //
 
-int tmp_d = 0;//TODO modify later
+int tmp_d = -10;//TODO modify later
 
 real CRnnLM::random(real min, real max)
 {
@@ -47,6 +47,12 @@ void CRnnLM::setTestDomainFile(char *str)
 {
 	strcpy(test_domain_file, str);
 }
+
+void CRnnLM::setValidDomainFile(char *str)
+{
+	strcpy(valid_domain_file, str);
+}
+
 
 void CRnnLM::setValidFile(char *str)
 {
@@ -1941,6 +1947,9 @@ void CRnnLM::trainNet()
 		last_word=0;
 		logp=0;
 		wordcn=0;
+		f_domain = fopen(valid_domain_file, "r");
+		fscanf(f_domain, "%d", &tmp_d);
+
 		while (1) {
 
 			word=readWordIndex(fi);     //read next word
@@ -1973,6 +1982,7 @@ void CRnnLM::trainNet()
 			history[0]=last_word;
 
 			if (independent && (word==0)) netReset();
+			if (word == 0) fscanf(f_domain, "%d", &tmp_d);
 		}
 		fclose(fi);
 

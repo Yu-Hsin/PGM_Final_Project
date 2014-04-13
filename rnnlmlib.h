@@ -10,7 +10,7 @@
 #ifndef _RNNLMLIB_H_
 #define _RNNLMLIB_H_
 
-#define MAX_STRING 100
+#define MAX_STRING 50
 
 #ifndef WEIGHTTYPE
 #define WEIGHTTYPE double
@@ -50,6 +50,8 @@ protected:
     char train_file[MAX_STRING];
     char train_domain_file[MAX_STRING];
     char test_domain_file[MAX_STRING];
+    char valid_domain_file[MAX_STRING];
+
     char valid_file[MAX_STRING];
     char test_file[MAX_STRING];
     char rnnlm_file[MAX_STRING];
@@ -304,6 +306,7 @@ public:
     void setTrainFile(char *str);
     void setTrainDomainFile(char *str);
     void setTestDomainFile(char *str);
+    void setValidDomainFile(char *str);
     void setValidFile(char *str);
     void setTestFile(char *str);
     void setRnnLMFile(char *str);

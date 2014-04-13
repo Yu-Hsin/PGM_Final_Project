@@ -69,6 +69,7 @@ int main(int argc, char **argv)
     
     char train_file[MAX_STRING];
     char train_domain_file[MAX_STRING];
+    char valid_domain_file[MAX_STRING];
     char test_domain_file[MAX_STRING];
     char valid_file[MAX_STRING];
     char test_file[MAX_STRING];
@@ -286,6 +287,25 @@ int main(int argc, char **argv)
     	}
     }
     
+
+    i=argPos((char *)"-valid_domain_file", argc, argv);
+    if (i>0) {
+    	if (i+1==argc) {
+    		printf("ERROR: domain data file not specified!\n");
+    		return 0;
+    	}
+
+    	strcpy(valid_domain_file, argv[i+1]);
+
+
+    	f=fopen(valid_domain_file, "rb");
+    	if (f==NULL) {
+    		printf("ERROR: domain data file not found!\n");
+    		return 0;
+    	}
+    }
+
+
     //set one-iter
     i=argPos((char *)"-one-iter", argc, argv);
     if (i>0) {
@@ -722,6 +742,7 @@ int main(int argc, char **argv)
 
     	model1.setTrainFile(train_file);
     	model1.setTrainDomainFile(train_domain_file);
+    	model1.setValidDomainFile(valid_domain_file);
     	model1.setRnnLMFile(rnnlm_file);
     	model1.setFileType(fileformat);
     	
