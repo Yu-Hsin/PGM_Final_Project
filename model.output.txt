@@ -1,44 +1,40 @@
 
 iter: 0
-valid log probability: -15593.285781
-PPL net: 9.813183
+valid log probability: -15669.430786
+PPL net: 9.923231
 
 iter: 1
-valid log probability: -14894.417519
-PPL net: 8.858464
+valid log probability: -14912.946880
+PPL net: 8.882536
 
 iter: 2
-valid log probability: -14624.422750
-PPL net: 8.515015
+valid log probability: -14491.819072
+PPL net: 8.351244
 
 iter: 3
-valid log probability: -14429.113909
-PPL net: 8.274901
+valid log probability: -14407.073873
+PPL net: 8.248234
 
 iter: 4
-valid log probability: -14186.860042
-PPL net: 7.986459
+valid log probability: -14480.623149
+PPL net: 8.337562
 
 iter: 5
-valid log probability: -14183.057054
-PPL net: 7.982012
+valid log probability: -14156.125880
+PPL net: 7.950591
 
 iter: 6
-valid log probability: -14074.647901
-PPL net: 7.856281
+valid log probability: -13990.257042
+PPL net: 7.759779
 
 iter: 7
-valid log probability: -13959.209304
-PPL net: 7.724575
+valid log probability: -13867.152528
+PPL net: 7.621129
 
 iter: 8
-valid log probability: -13815.817130
-PPL net: 7.564045
+valid log probability: -13805.127331
+PPL net: 7.552212
 
 iter: 9
-valid log probability: -13629.968309
-PPL net: 7.360939
-
-iter: 10
-valid log probability: -13593.693280
-PPL net: 7.321936
+valid log probability: -13767.239045
+PPL net: 7.510422

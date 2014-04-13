@@ -38,6 +38,16 @@ void CRnnLM::setTrainFile(char *str)
 	strcpy(train_file, str);
 }
 
+void CRnnLM::setTrainDomainFile(char *str)
+{
+	strcpy(train_domain_file, str);
+}
+
+void CRnnLM::setTestDomainFile(char *str)
+{
+	strcpy(test_domain_file, str);
+}
+
 void CRnnLM::setValidFile(char *str)
 {
 	strcpy(valid_file, str);
@@ -1786,7 +1796,7 @@ void CRnnLM::trainNet()
 {
 	int a, b, word, last_word, wordcn;
 	char log_name[200];
-	FILE *fi, *flog;
+	FILE *fi, *flog, *f_domain;
 	clock_t start, now;
 
 	sprintf(log_name, "%s.output.txt", rnnlm_file);
@@ -1822,6 +1832,9 @@ void CRnnLM::trainNet()
 		netFlush();
 
 		fi=fopen(train_file, "rb");
+		f_domain = fopen(train_domain_file, "r");
+		fscanf(f_domain, "%d", &tmp_d);
+
 		last_word=0;
 
 		if (counter>0) for (a=0; a<counter; a++) word=readWordIndex(fi);	//this will skip words that were already learned if the training was interrupted
@@ -1847,6 +1860,7 @@ void CRnnLM::trainNet()
 			}
 
 			word=readWordIndex(fi);     //read next word
+
 
 
 
@@ -1891,6 +1905,8 @@ void CRnnLM::trainNet()
 			history[0]=last_word;
 
 			if (independent && (word==0)) netReset();
+			if(word == 0) fscanf(f_domain, "%d", &tmp_d);
+
 		}//end of reading the word
 		fclose(fi);
 
@@ -1997,7 +2013,7 @@ void CRnnLM::testNet()
 {
 
 	int a, b, word, last_word, wordcn;
-	FILE *fi, *flog, *lmprob=NULL;
+	FILE *fi, *flog, *lmprob=NULL,*f_domain;
 	real prob_other, log_other, log_combine;
 	double d;
 
@@ -2058,6 +2074,9 @@ void CRnnLM::testNet()
 	if (bptt>0) for (a=0; a<bptt+bptt_block; a++) bptt_history[a]=0;
 	for (a=0; a<MAX_NGRAM_ORDER; a++) history[a]=0;
 	if (independent) netReset();
+
+	f_domain = fopen(test_domain_file, "r");
+	fscanf(f_domain, "%d", &tmp_d);
 
 	while (1) {
 
@@ -2121,6 +2140,7 @@ void CRnnLM::testNet()
 		history[0]=last_word;
 
 		if (independent && (word==0)) netReset();
+		if (word==0) fscanf(f_domain, "%d", &tmp_d);
 	}
 	fclose(fi);
 	if (use_lmprob) fclose(lmprob);

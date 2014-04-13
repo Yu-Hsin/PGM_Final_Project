@@ -68,6 +68,8 @@ int main(int argc, char **argv)
     int anti_k=0;
     
     char train_file[MAX_STRING];
+    char train_domain_file[MAX_STRING];
+    char test_domain_file[MAX_STRING];
     char valid_file[MAX_STRING];
     char test_file[MAX_STRING];
     char rnnlm_file[MAX_STRING];
@@ -250,6 +252,39 @@ int main(int argc, char **argv)
         train_file_set=1;
     }
     
+    i=argPos((char *)"-train_domain_file", argc, argv);
+    if (i>0) {
+    	if (i+1==argc) {
+    		printf("ERROR: domain data file not specified!\n");
+    		return 0;
+    	}
+
+    	strcpy(train_domain_file, argv[i+1]);
+
+
+    	f=fopen(train_domain_file, "rb");
+    	if (f==NULL) {
+    		printf("ERROR: domain data file not found!\n");
+    		return 0;
+    	}
+    }
+
+    i=argPos((char *)"-test_domain_file", argc, argv);
+    if (i>0) {
+    	if (i+1==argc) {
+    		printf("ERROR: domain data file not specified!\n");
+    		return 0;
+    	}
+
+    	strcpy(test_domain_file, argv[i+1]);
+
+
+    	f=fopen(test_domain_file, "rb");
+    	if (f==NULL) {
+    		printf("ERROR: domain data file not found!\n");
+    		return 0;
+    	}
+    }
     
     //set one-iter
     i=argPos((char *)"-one-iter", argc, argv);
@@ -686,6 +721,7 @@ int main(int argc, char **argv)
     	CRnnLM model1;
 
     	model1.setTrainFile(train_file);
+    	model1.setTrainDomainFile(train_domain_file);
     	model1.setRnnLMFile(rnnlm_file);
     	model1.setFileType(fileformat);
     	
@@ -719,7 +755,7 @@ int main(int argc, char **argv)
     
     if (test_data_set && rnnlm_file_set) {
         CRnnLM model1;
-
+        model1.setTestDomainFile(test_domain_file);
         model1.setLambda(lambda);
         model1.setRegularization(regularization);
         model1.setDynamic(dynamic);

@@ -48,6 +48,8 @@ enum FileTypeEnum {TEXT, BINARY, COMPRESSED};		//COMPRESSED not yet implemented
 class CRnnLM{
 protected:
     char train_file[MAX_STRING];
+    char train_domain_file[MAX_STRING];
+    char test_domain_file[MAX_STRING];
     char valid_file[MAX_STRING];
     char test_file[MAX_STRING];
     char rnnlm_file[MAX_STRING];
@@ -300,6 +302,8 @@ public:
     void setFactorSize(int size) {factor_size = size;}
 
     void setTrainFile(char *str);
+    void setTrainDomainFile(char *str);
+    void setTestDomainFile(char *str);
     void setValidFile(char *str);
     void setTestFile(char *str);
     void setRnnLMFile(char *str);
